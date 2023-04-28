@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业微信同事名转fctix5词库</title>
+    <script src="https://unpkg.com/pinyin-pro"></script>
+</head>
+<style>
+    div {
+        width: 80vw;
+        height: 80vh;
+        margin: auto;
+    }
+
+    textarea {
+        width: 100%;
+        height: 30%;
+    }
+
+    button {
+        width: 5rem;
+        height: 3rem;
+    }
+</style>
+
+<body>
+    <div>
+        <textarea placeholder="姓名列表，以;符号分割"></textarea>
+        <br>
+        <br>
+        <button onclick="conver()">转换</button>
+        <ul>
+            <li>打开企业微信公司群</li>
+            <li>点击群成员列表旁边的菜单按钮</li>
+            <li>使用“复制群成员账号”功能</li>
+            <li>粘贴群成员账号到上面输入框</li>
+            <li>点击转换按钮，保存转换好的文本文件 worker.txt </li>
+            <li>在命令行使用 sudo apt install libime-bin 安装命令行工具</li>
+            <li>在命令行使用 libime_pinyindict worker.txt ~/.local/share/fcitx5/pinyin/dictionaries/worker.dict 转换文本文件为词库文件
+            </li>
+            <li>重启 fctix5</li>
+        </ul>
+    </div>
+</body>
+<script>
+    function conver() {
+        console.log("start", performance.now())
+        const txt = document.querySelector("textarea").value.
+            split(";").
+            // 去除非汉字字符
+            map(name => {
+                const arr = name.match("[\u4e00-\u9fa5]+")
+                return { name, nameZh: arr && arr.length ? arr[0] : null }
+            }).
+            // 过滤非汉字名字
+            filter(obj => obj.nameZh !== null).
+            // 转换出拼音
+            map(obj => {
+                return [obj.name, pinyinPro.pinyin(obj.nameZh, { mode: "surname", toneType: 'none', nonZh: "removed", v: true, type: 'array' }).join("'"), 100]
+            }).
+            map(arr => arr.join(" ")).
+            join("\n")
+        console.log("end", performance.now())
+        console.log(txt)
+
+        const filename = "worker.txt"
+        var file = new File([txt], filename, {
+            type: "text/plain",
+        });
+        var element = document.createElement('a');
+        element.setAttribute('href', URL.createObjectURL(file));
+        element.setAttribute('download', filename);
+        element.click()
+    }
+</script>
+
+</html>
